@@ -21,11 +21,10 @@ const authSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    role: {
-        type: Number,
-    },
+   
 });
 
 // Correct export of the model
 const authDB = mongoose.model('auth', authSchema);
-module.exports = authDB;
+
+module.exports = authDB;  // export first
