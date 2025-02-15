@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');  // Import nodemailer
-const jwt = require('jsonwebtoken');  // Import JSON Web Token for login token generation
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
 const authDB = require('../models/auth_schema');
 const authRouter = express.Router();
 
@@ -47,27 +47,27 @@ authRouter.post('/register', async (req, res) => {
     // Check if the username, phone, or email already exists
     const oldUser = await authDB.findOne({ username });
     if (oldUser) {
+      console.log('Registration failed: Username already exists.');
       return res.status(400).json({
         Success: false,
-        Error: true,
         Message: 'Username already exists. Please Log In',
       });
     }
 
     const oldPhone = await authDB.findOne({ phone });
     if (oldPhone) {
+      console.log('Registration failed: Phone number already exists.');
       return res.status(400).json({
         Success: false,
-        Error: true,
         Message: 'Phone number already exists',
       });
     }
 
     const oldEmail = await authDB.findOne({ email });
     if (oldEmail) {
+      console.log('Registration failed: Email already exists.');
       return res.status(400).json({
         Success: false,
-        Error: true,
         Message: 'Email already exists',
       });
     }
@@ -95,23 +95,22 @@ authRouter.post('/register', async (req, res) => {
       // Send verification email
       await sendVerificationEmail(email, verificationToken);
 
+      console.log('Registration successful for:', username);
       return res.json({
         Success: true,
-        Error: false,
         Message: 'Registration Successful. Please check your email for verification link.',
       });
     } else {
+      console.log('Registration failed: Database error');
       return res.json({
         Success: false,
-        Error: true,
-        Message: 'Registration Failed',
+        Message: 'Registration Failed. Please try again later.',
       });
     }
   } catch (error) {
     console.error('Error in register route:', error.message);
     return res.status(500).json({
       Success: false,
-      Error: true,
       Message: 'Internal Server Error',
       ErrorMessage: error.message,
     });
@@ -127,9 +126,9 @@ authRouter.get('/verify-email/:token', async (req, res) => {
     const user = await authDB.findOne({ verificationToken: token });
 
     if (!user) {
+      console.log('Email verification failed: Invalid or expired token');
       return res.status(400).json({
         Success: false,
-        Error: true,
         Message: 'Invalid or expired token',
       });
     }
@@ -141,16 +140,15 @@ authRouter.get('/verify-email/:token', async (req, res) => {
     // Save the updated user
     await user.save();
 
+    console.log('Email verified successfully for user:', user.username);
     res.status(200).json({
       Success: true,
-      Error: false,
       Message: 'Email verified successfully. You can now log in.',
     });
   } catch (error) {
     console.error('Error in verify-email route:', error.message);
     return res.status(500).json({
       Success: false,
-      Error: true,
       Message: 'Internal Server Error',
       ErrorMessage: error.message,
     });
@@ -165,29 +163,29 @@ authRouter.post('/login', async (req, res) => {
     // Check if the user exists
     const user = await authDB.findOne({ username });
     if (!user) {
+      console.log('Login failed: User not found');
       return res.status(400).json({
         Success: false,
-        Error: true,
-        Message: 'User not found',
+        Message: 'User not found. Please check your username.',
       });
     }
 
     // Check if the user's email is verified
     if (!user.verified) {
+      console.log('Login failed: Email not verified');
       return res.status(400).json({
         Success: false,
-        Error: true,
-        Message: 'Email not verified. Please check your inbox',
+        Message: 'Email not verified. Please check your inbox.',
       });
     }
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log('Login failed: Invalid password');
       return res.status(400).json({
         Success: false,
-        Error: true,
-        Message: 'Invalid password',
+        Message: 'Invalid password. Please try again.',
       });
     }
 
@@ -198,9 +196,9 @@ authRouter.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    console.log('Login successful for user:', username);
     res.json({
       Success: true,
-      Error: false,
       Message: 'Login successful',
       token,
     });
@@ -208,7 +206,6 @@ authRouter.post('/login', async (req, res) => {
     console.error('Error in login route:', error.message);
     return res.status(500).json({
       Success: false,
-      Error: true,
       Message: 'Internal Server Error',
       ErrorMessage: error.message,
     });

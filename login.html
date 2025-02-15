@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register & Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0px 0px 10px 0px #000;
+            border-radius: 5px;
+            width: 300px;
+            text-align: center;
+            position: relative;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .message {
+            margin-top: 10px;
+            color: red;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Register</h2>
+        <input type="text" id="regName" placeholder="Full Name">
+        <input type="text" id="regUsername" placeholder="Username">
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="text" id="regPhone" placeholder="Phone">
+        <input type="password" id="regPassword" placeholder="Password">
+        <div class="loader" id="regLoader"></div>
+        <button onclick="registerUser()">Register</button>
+        <p class="message" id="regMessage"></p>
+    </div>
+
+    <br>
+
+    <div class="container">
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <div class="loader" id="loginLoader"></div>
+        <button onclick="loginUser()">Login</button>
+        <p class="message" id="loginMessage"></p>
+    </div>
+
+    <script>
+        async function registerUser() {
+            const name = document.getElementById("regName").value;
+            const username = document.getElementById("regUsername").value;
+            const email = document.getElementById("regEmail").value;
+            const phone = document.getElementById("regPhone").value;
+            const password = document.getElementById("regPassword").value;
+            const loader = document.getElementById("regLoader");
+            const message = document.getElementById("regMessage");
+
+            message.textContent = ""; 
+            if (!name || !username || !email || !phone || !password) {
+                message.textContent = "All fields are required!";
+                return;
+            }
+
+            loader.style.display = "block"; 
+
+            try {
+                const response = await fetch("http://localhost:8080/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, username, email, phone, password })
+                });
+
+                const data = await response.json();
+                loader.style.display = "none"; 
+                message.textContent = data.message || "Registration successful!";
+            } catch (error) {
+                loader.style.display = "none"; 
+                message.textContent = "Registration failed. Please try again!";
+            }
+        }
+
+        async function loginUser() {
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+            const loader = document.getElementById("loginLoader");
+            const message = document.getElementById("loginMessage");
+
+            message.textContent = "";
+            if (!username || !password) {
+                message.textContent = "Username and password required!";
+                return;
+            }
+
+            loader.style.display = "block"; 
+
+            try {
+                const response = await fetch("http://localhost:8080/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                loader.style.display = "none"; 
+
+                if (data.success) {
+                    localStorage.setItem("authToken", data.token);
+                    alert("Login Successful! Token stored.");
+                    message.style.color = "green";
+                    message.textContent = "Login successful!";
+                } else {
+                    message.textContent = data.message || "Login failed!";
+                }
+            } catch (error) {
+                loader.style.display = "none"; 
+                message.textContent = "Login failed. Please check your details.";
+            }
+        }
+    </script>
+
+</body>
+</html>
+  

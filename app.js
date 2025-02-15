@@ -4,6 +4,7 @@ const app = experess()
 const mongoose = require("mongoose")
  const { url } = require("inspector")
 const { urlencoded } = require("body-parser")
+const cors = require('cors');
 const authRouter = require("./routes/auth_routes")
 
 
@@ -46,6 +47,8 @@ app.get("/b", (req, res) => {
     res.send("b")
 }
 )
+
+app.use(cors());
 app.listen(process.env.PORT, () => {
     console.log('server started')
 })
