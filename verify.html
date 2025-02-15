@@ -7,83 +7,59 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
-      background-color: #f5f5f5;
+      background-color: #f4f4f4;
     }
-    .verification-container {
+    .container {
       text-align: center;
-      padding: 20px;
-      border: 1px solid #ccc;
+      background-color: #fff;
+      padding: 30px;
       border-radius: 8px;
-      background-color: white;
-      width: 300px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .loading {
-      display: none;
-    }
-    .success-message {
-      color: green;
-    }
-    .error-message {
-      color: red;
+    .message {
+      font-size: 18px;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <div class="verification-container">
+  <div class="container">
     <h2>Email Verification</h2>
-    <p id="status-message">Verifying your email...</p>
-    <p class="loading" id="loading">Loading...</p>
-    <p class="success-message" id="success-message" style="display:none;">Your email has been successfully verified!</p>
-    <p class="error-message" id="error-message" style="display:none;">Failed to verify email. Please try again later.</p>
+    <div id="message" class="message">Verifying your email...</div>
   </div>
 
   <script>
-    // Get the token from the URL parameters
+    // Get the token from the URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-
-    if (!token) {
-      document.getElementById('status-message').innerText = "Invalid or missing token.";
-      document.getElementById('loading').style.display = 'none';
-      return;
-    }
-
-    // Function to send verification request
-    async function verifyEmail(token) {
-      try {
-        // Display loading message
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('status-message').style.display = 'none';
-
-        // Make an API call to verify the email
-        const response = await fetch(`http://yourdomain.com/api/auth/verify-email/${token}`, {
-          method: 'GET',
+    
+    if (token) {
+      // Send the token to the backend for verification
+      fetch(`http://localhost:8080/api/auth/verify-email/${token}`)
+        .then(response => response.json())
+        .then(data => {
+          const message = document.getElementById('message');
+          if (data.Success) {
+            message.innerHTML = 'Email verified successfully. You can now log in.';
+          } else {
+            message.innerHTML = 'Failed to verify email. Please try again later.';
+          }
+        })
+        .catch(error => {
+          const message = document.getElementById('message');
+          message.innerHTML = 'An error occurred. Please try again later.';
+          console.error('Error verifying email:', error);
         });
-
-        const data = await response.json();
-
-        // Hide loading and show the appropriate message based on the response
-        document.getElementById('loading').style.display = 'none';
-
-        if (data.Success) {
-          document.getElementById('success-message').style.display = 'block';
-        } else {
-          document.getElementById('error-message').style.display = 'block';
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('status-message').innerText = "An error occurred. Please try again later.";
-        document.getElementById('loading').style.display = 'none';
-      }
+    } else {
+      const message = document.getElementById('message');
+      message.innerHTML = 'Invalid verification link.';
     }
-
-    // Call the verifyEmail function with the token from the URL
-    verifyEmail(token);
   </script>
 </body>
 </html>

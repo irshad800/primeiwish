@@ -8,6 +8,7 @@ const cors = require('cors');
 const authRouter = require("./routes/auth_routes")
 
 
+app.use(cors()); 
 
 require ('dotenv').config();
 
@@ -48,7 +49,7 @@ app.get("/b", (req, res) => {
 }
 )
 
-app.use(cors());
+app.use(cors)
 app.listen(process.env.PORT, () => {
     console.log('server started')
 })

@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
-const authDB = require('../models/auth_schema');
+const authDB = require('../models/auth_schema');  // Ensure the correct path to your schema
 const authRouter = express.Router();
 
 // Create a Nodemailer transporter
@@ -21,8 +21,8 @@ function generateVerificationToken() {
 
 // Send verification email
 async function sendVerificationEmail(email, token) {
-  const verificationUrl = `http://localhost:8080/api/auth/verify-email/${token}`;
-  
+  const verificationUrl = `http://localhost:8080/verify.html?token=${token}`;  // Direct to your HTML page
+
   const mailOptions = {
     from: 'irshadvp800@gmail.com',  // Replace with your email
     to: email, 
